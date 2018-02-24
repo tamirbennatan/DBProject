@@ -19,6 +19,9 @@ drop table if exists lowticket cascade;
 drop table if exists highticket cascade; 
 drop table if exists sprint cascade;
 drop table if exists ticketsprintassignment cascade; 
+drop table if exists clientstakeholder cascade;
+drop table if exists projectbowner cascade; 
+drop table if exists ticketdeveloperassignment cascade;
 
 -- Generic Person entity
 create table person(
@@ -107,7 +110,7 @@ create table ticket (
 	primary key (tid)
 ); 
 
--- High level ticket. Extends ticke. References Project (key & participation constraint), references client (key & participation constraint)
+-- High level ticket. Extends ticket. References Project (key & participation constraint), references client (key & participation constraint)
 create table highticket (
 	tid integer, 
 	projid integer not null, 
@@ -160,14 +163,5 @@ create table ticketdeveloperassignment(
 	dateassigned date, 
 	primary key (tid), 
 	foreign key (tid) references lowticket(tid)
-)
-
-
-
-
-
-
-
-
-
+);
 
