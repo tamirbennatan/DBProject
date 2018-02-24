@@ -27,7 +27,8 @@ drop table if exists ticketdeveloperassignment cascade;
 create table person(
 	pid integer, 
 	name varchar(50), 
-	phonenumber integer,
+	phonenumber char(15),
+	email varchar(100), 
 	primary key (pid)
 ); 
 
