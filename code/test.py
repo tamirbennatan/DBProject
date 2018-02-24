@@ -1,15 +1,15 @@
 import pandas as pd
 from sqlalchemy import create_engine
-
-# config parser
 import ConfigParser
-Config = ConfigParser.ConfigParser()
 import pdb
 
-# Read the conig file, and store the database password as a global variable
-Config.read("../../config.ini")
-DBPWD = Config.get("DBPassword", "Value")
+# read database credentials from config file
+config = ConfigParser.ConfigParser().read("login_credentials.ini")
+db_credentials = config["database"]
+db_user = db_credentials["username"]
+db_pass = db_credentials["password"]
+db_url = db_credentials["url"].format(db_user, db_pass)
 
-engine =  create_engine('postgresql://cs421g51:{0}@comp421.cs.mcgill.ca:5432/cs421'.format(DBPWD))
+engine = create_engine(db_url)
 
 df = pd.read_sql_query('select * from person',con=engine)
