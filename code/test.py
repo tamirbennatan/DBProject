@@ -4,12 +4,13 @@ import ConfigParser
 import pdb
 
 # read database credentials from config file
-config = ConfigParser.ConfigParser().read("login_credentials.ini")
+config = ConfigParser.ConfigParser(interpolation=ConfigParser.ExtendedInterpolation())
+config = config.read("login_credentials.ini")
 db_credentials = config["database"]
-db_user = db_credentials["username"]
-db_pass = db_credentials["password"]
-db_url = db_credentials["url"].format(db_user, db_pass)
+db_url = db_credentials["url"]
 
+# get db engine
 engine = create_engine(db_url)
 
+# pandas to read from db
 df = pd.read_sql_query('select * from person',con=engine)
