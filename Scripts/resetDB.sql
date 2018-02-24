@@ -166,3 +166,13 @@ create table ticketdeveloperassignment(
 	foreign key (tid) references lowticket(tid)
 );
 
+create table clientstakeholder(
+	projid integer,
+	pid integer,
+	role varchar(50),
+	primary key (projid,pid),
+	foreign key (projid) references project(projid),
+	foreign key (pid) references client(pid)
+);
+
+
