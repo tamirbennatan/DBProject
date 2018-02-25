@@ -11,31 +11,48 @@ insert into person values
  	(4, 'Ben Tau', '1849482841', 'bennyboo@amazon.com'), 
  	(5, 'Paul Line', '9993991113', 'pauline@amazon.com'),
  	(6, 'Benji Taubenblatt','1234432155','benji@mail.mcgill.ca'),
- 	(7, 'Eric Andre', '82746465724', 'ericandre@gmail.com') 
+ 	(7, 'Eric Andre', '82746465724', 'ericandre@gmail.com'), 
+ 	(8, 'Tif Fany', '3824832238', 'tiff@email.com'), 
+ 	(9, 'Joe Rogan', '9783224258', 'therealjoe@joe.com'), 
+ 	(10, 'Max Mcdan', '1984839591' , 'max@hotmail.com'), 
+ 	(11, 'Jimmy Kim', '2948422039', 'jimmk@yahoo.com'), 
+ 	(12, 'Jenny Bass', '23855391285', 'jenb@gmail.com'), 
+ 	(13, 'Dennis Misty', '2484829492', 'missdennis@yahoo.com'), 
+ 	(14, 'Jeffery Cost', '3942349492', 'costlyjeff@gmail.com'), 
+ 	(15, 'Tim Chooch', '18883942322', 'tim.chooch@gmail.com'), 
+ 	(16, 'Colonel Moostard', '2352556245', 'innocentcolonel@gmail.com'), 
+ 	(17, 'Foo Kyoo', '235925924', 'kfoo@yahoo.com'), 
+ 	(18, 'Amir Ben-Yehuda', '23345524524', 'amirby@hotmail.com'), 
+ 	(19, 'Omer Tsion', '2939482948', 'omertz@yahoo.com'),
+ 	(20, 'Sammy Sprinkle', '2938581948', 'sammyspk@hotmail.com');
  
 
 
 insert into clientcompany values 
-	(1,'Mango Madness Inc', 3),
-	(2,'Killa Bee Records', 1),
-	(3,'Seal Brigade Sofas', 2),
-	(4,'Al and Co Solutions', 4),
-	(5,'Good ol Beef Jerky', 5),
-	(6,'Atmosphere Visual Effects', 4),
-	(7,'ATB Financial', 2),
-	(8,'Bank of Montreal', 3),
-	(9,'Bard Ventures', 5),
-	(10,'Pure Gold',5) 
+	(1,'Mango Madness Inc', 30),
+	(2,'Killa Bee Records', 25),
+	(3,'Seal Brigade Sofas', 30),
+	(4,'Al and Co Solutions', 40),
+	(5,'Good ol Beef Jerky', 35),
+	(6,'Atmosphere Visual Effects', 40),
+	(7,'ATB Financial', 20),
+	(8,'Bank of Montreal', 30),
+	(9,'Bard Ventures', 35),
+	(10,'Pure Gold',35) ;
 
 insert into team values
-	('Enterprise'),
-	('Siren')
+	('Web Dev'),
+	('Management'), 
+	('HR'), 
+	('Ad Operations'), 
+	('Support'), 
+	('Core Dev'), 
+	('Data Science'), 
+	('Public Relations'), 
+	('Sales'), 
+	('Office Management');
 
-insert into client values
-	(5,8),
-	(4,2),
-	(7,1)
-	
+/*
 insert into Employee values
 	(1, 'Enterprise', 'Lead Developer'),
 	(2, 'Enterprise', 'DBA'),
@@ -53,6 +70,5 @@ insert into project values
 
 insert into clientstakeholder values
 	(1,5,'Overview project completion')
-
-	
+*/
 
