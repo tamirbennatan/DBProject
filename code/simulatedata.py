@@ -31,23 +31,21 @@ def wordperm_factory(word_list):
     return stringgen
 
 # Create dummy projects for a list of clientcompanies
-def randomProjects(clientcompany, startdate ="2017-01-01" , enddate = "2018-02-01"):
-	"""
-	Create randome entries to the `project` table, 
-	given entries of the `clientcompany` table. 
+def randomProjects(clientcompany, daterange):
+    """
+    Create randome entries to the `project` table, 
+    given entries of the `clientcompany` table. 
 
-	Randomly select a number of projects for each client company, and a random
-	start date for each of these projects. 
+    Randomly select a number of projects for each client company, and a random
+    start date for each of these projects. 
 
-	input: clientcompany - pandas DataFrame
-	returns: project - pandas DataFrame
-		In the schema of the `project` table. 
-	"""
-    # get a range of dates where project may have been started
-    daterange = pd.date_range(start = startdate, end = enddate)
+    input: clientcompany - pandas DataFrame
+    returns: project - pandas DataFrame
+        In the schema of the `project` table. 
+    """
     
     # get a function to generate descriptions for the projects
-    descwords = ["A The", "important first test demo", 
+    descwords = ["A The", "important first test demo",
                 "project assignment test proof-of-concept sample"]
     descfunc = wordperm_factory(descwords)
     
@@ -139,103 +137,127 @@ def randomTickets(n, datestart = "2017-01-01", dateend = "2018-02-01"):
 
 
 if __name__ == '__main__':
-	"""
-	Some of the tables were manually filled in `inserts.sql`, including:
+    """
+    Some of the tables were manually filled in `inserts.sql`, including:
 
-	- people
-	- clientcompany
-	- team
+    - people
+    - clientcompany
+    - team
 
-	This script is to use this data to simulate entries for the rest of the tables. 
-	"""
-	np.random.seed(1)
-	# First, isolate the tables that were manually filled. 
-	# These will not be altered by this script
-	person = pd.read_sql_query("select * from person", engine)
-	clientcompany = pd.read_sql_query("select * from clientcompany", engine)
-	team = pd.read_sql_query("select * from team", engine)
+    This script is to use this data to simulate entries for the rest of the tables. 
+    """
+    np.random.seed(1)
+    # First, isolate the tables that were manually filled. 
+    # These will not be altered by this script
+    person = pd.read_sql_query("select * from person", engine)
+    clientcompany = pd.read_sql_query("select * from clientcompany", engine)
+    team = pd.read_sql_query("select * from team", engine)
 
-	"""
-	Take the existing people in the DB, and split them into employees and clients
-	"""
-	# get the indecies for the employees
-	emp_idx = np.random.choice([True, False], person.shape[0], p=[.7, .3])
-	# isolate employees and clients
-	employee = person.loc[emp_idx]
-	client = person.loc[np.logical_not(emp_idx)]
+    # isolate the date range in question
+    daterange = pd.date_range(start = "2017-01-01", end = "2018-02-01")
 
-	"""
-	Clients need to be part of client companies. 
-	For each client, pick a random client company
-	"""
-	# only keep the person id, and the client company id. 
-	client = client[['pid']]
-	client['ccid'] = np.random.choice(clientcompany['ccid'], size = client.shape[0], replace = True)
-	# Clients are ready - can push to database
-	client.to_sql('client', engine, if_exists='append', index=False)
+    """
+    Take the existing people in the DB, and split them into employees and clients
+    """
+    # get the indecies for the employees
+    emp_idx = np.random.choice([True, False], person.shape[0], p=[.7, .3])
+    # isolate employees and clients
+    employee = person.loc[emp_idx]
+    client = person.loc[np.logical_not(emp_idx)]
 
-	"""
-	Employees need to be associated with teams.
-	For each employee, select a random team (with replacement.
-	"""
-	# only keep the pid column from `person`
-	employee = employee[['pid']]
-	# pick a random team for each employee
-	employee['teamname'] = np.random.choice(team['teamname'], size = employee.shape[0],\
-		replace = True)
-	# get a function for creating random titles
-	titlewords = ["Senior Junior Lead Chief", 
-		"data web backend full-stack client database", 
-		"architect engineer scientist developer consultant officer"]
-	titlefunc = wordperm_factory(titlewords)
-	employee['title'] = [titlefunc() for i in range(employee.shape[0])]
+    """
+    Clients need to be part of client companies. 
+    For each client, pick a random client company
+    """
+    # only keep the person id, and the client company id. 
+    client = client[['pid']]
+    client['ccid'] = np.random.choice(clientcompany['ccid'], size = client.shape[0], replace = True)
+    # Clients are ready - can push to database
+    client.to_sql('client', engine, if_exists='append', index=False)
 
-	# employees is ready to go. Push it to the database
-	employee.to_sql('employee', engine, if_exists="append", index = False)
+    """
+    Employees need to be associated with teams.
+    For each employee, select a random team (with replacement.
+    """
+    # only keep the pid column from `person`
+    employee = employee[['pid']]
+    # pick a random team for each employee
+    employee['teamname'] = np.random.choice(team['teamname'], size = employee.shape[0],\
+        replace = True)
+    # get a function for creating random titles
+    titlewords = ["Senior Junior Lead Chief", 
+        "data web backend full-stack client database", 
+        "architect engineer scientist developer consultant officer"]
+    titlefunc = wordperm_factory(titlewords)
+    employee['title'] = [titlefunc() for i in range(employee.shape[0])]
 
-	"""
-	Employees are either developers or business owners. 
-	They could be both, or neither. 
-	Sample from employees (with replacement) to populate these individual tables
-	"""
-	developer = employee.sample(frac=.7)[['pid']]
-	businessowner = employee.sample(frac=.4)[['pid']]
-	# push these tables to the database
-	developer.to_sql('developer', engine, if_exists = "append", index = False)
-	businessowner.to_sql('businessowner', engine, if_exists = "append", index = False)
+    # employees is ready to go. Push it to the database
+    employee.to_sql('employee', engine, if_exists="append", index = False)
 
-	"""
-	Simulate a bunch of projects. 
-	Projects are associated with client companies, and have a date created. 
+    """
+    Employees are either developers or business owners. 
+    They could be both, or neither. 
+    Sample from employees (with replacement) to populate these individual tables
+    """
+    developer = employee.sample(frac=.7)[['pid']]
+    businessowner = employee.sample(frac=.4)[['pid']]
+    # push these tables to the database
+    developer.to_sql('developer', engine, if_exists = "append", index = False)
+    businessowner.to_sql('businessowner', engine, if_exists = "append", index = False)
 
-	Randomly pick a number of projects for each client company, 
-	then randomly select a date created for each project. 
-	"""
-	project = randomProjects(clientcompany)
-	# push it the the database
-	project.to_sql("project", engine, if_exists = "append", index = False)
+    """
+    Simulate a bunch of projects. 
+    Projects are associated with client companies, and have a date created. 
 
-	"""
-	Populate the stakeholder table. 
-	Each entry is a pairing of a client and project id. 
-	Only put clients with projects if the employer of that client created the project. 
-	"""
-	# merge the clients with projects that their employers have initialized. 
-	clientstakeholder = pd.merge(client, project, on = "ccid", how = "left")
-	clientstakeholder = clientstakeholder[['projid', 'pid']]
-	# Put a role for each of the stakeholders
-	rolewords = ["Lead Project Feature", "manager requester point-of-contact"]
-	rolefunc = wordperm_factory(rolewords)
-	clientstakeholder['role'] = [rolefunc() for i in range(clientstakeholder.shape[0])]
-	# sample from these client-project combinatinots - not all clients are stakeholers
-	clientstakeholder = clientstakeholder.sample(frac = .5)
+    Randomly pick a number of projects for each client company, 
+    then randomly select a date created for each project. 
+    """
+    project = randomProjects(clientcompany, daterange)
+    # push it the the database
+    project.to_sql("project", engine, if_exists = "append", index = False)
 
-	# push this table to the database. 
-	clientstakeholder.to_sql("clientstakeholder", engine, if_exists = "append", index = False)
+    """
+    Populate the stakeholder table. 
+    Each entry is a pairing of a client and project id. 
+    Only put clients with projects if the employer of that client created the project. 
+    """
+    # merge the clients with projects that their employers have initialized. 
+    clientstakeholder = pd.merge(client, project, on = "ccid", how = "left")
+    clientstakeholder = clientstakeholder[['projid', 'pid']]
+    # only keep clients who are working on a project - drop NA
+    clientstakeholder.dropna(inplace = True)
+    # Put a role for each of the stakeholders
+    rolewords = ["Lead Project Feature", "manager requester point-of-contact"]
+    rolefunc = wordperm_factory(rolewords)
+    clientstakeholder['role'] = [rolefunc() for i in range(clientstakeholder.shape[0])]
+    # sample from these client-project combinatinots - not all clients are stakeholers
+    clientstakeholder = clientstakeholder.sample(frac = .5)
+    # push this table to the database. 
+    clientstakeholder.to_sql("clientstakeholder", engine, if_exists = "append", index = False)
 
+    """
+    Create the sprints. 
+    For each team, randomly choose a month of the first sprint. 
+    From that point on, create monthly sprints for said teams. 
+    """
+    # accumulate the sprints in a dataframe
+    # sprint = pd.DataFrame({"sprintnumber": [], "teamname": [], "startdate": [], "enddate": []})
 
-
-
+    # # simulate the sprints for each individual team, and add them to the `sprint` dataframe. 
+    # for t in team['teamname']:
+    #     # pick the date of the first sprint
+    #     first_start = pd.to_datetime(np.random.choice(daterange)) + MonthBegin(0)
+    #     # get the range of start and enddates for the sprints of that team
+    #     startdate = pd.date_range(start = first_start, end = "2018-02-01", freq = "M") + MonthBegin(0)
+    #     enddate = startdate + MonthEnd(0)
+    #     # build up a temporary dataframe for the sprints of that team
+    #     tmp = pd.DataFrame({"startdate": startdate, "enddate": enddate})
+    #     # add sprint numbers and team name
+    #     tmp['sprintnumber'] = range(1, tmp.shape[0] + 1)
+    #     tmp['teamname'] = np.repeat(t, tmp.shape[0])
+        
+    #     # accumulate the sprints of all the teams
+    #     sprint = pd.concat([sprint,tmp], ignore_index=True)
 
 
 
