@@ -404,6 +404,89 @@ if __name__ == '__main__':
     ticketsprintassignment.to_sql("ticketsprintassignment", engine,
     	if_exists = "append", index = False)
 
+    """
+    For variety, it would be nice to have some tickets carry over to two consecutive sprints. 
+    This represents an assigned ticket not being completed in time. 
+
+    To do this, I'll sample around one third of the tickets, and put in another entry into
+    the `ticketsprintassignment` table, with the same team and ticket number, but the
+    `datescheduled` field as the first day of the following month. 
+    """
+    # Select a sample of tickets to carry over to a consecutive sprint. 
+    notcomplete = ticketsprintassignment[
+    ticketsprintassignment['datescheduled'] < pd.to_datetime('2018-01-01').date()
+    ].sample(frac = .33, random_state = 1)
+    # increment the sprint number 
+    notcomplete['sprintnumber'] = notcomplete['sprintnumber'] + 1
+    # update the `datescheduled` field the the first day of the following month
+    notcomplete['datescheduled'] = notcomplete['datescheduled'] + MonthEnd(0) + pd.Timedelta(1, "D")
+    # push to the database
+    notcomplete.to_sql("ticketsprintassignment", engine, if_exists = "append", index = False)
+
+    """
+    Create the table `ticketdeveloperassignment`, 
+    which keeps track of which developer is assigned to each ticket. 
+
+    To do so, look at which team scheduled each low-level ticket to their sprint. 
+    Then, pick a random developer from said team for each low ticket. 
+    Mark that the low ticket was assigned to that developer (0-3) days after the 
+    ticket was scheduled for the sprint. 
+    """
+    # get the date the ticket was scheduled to the sprint by a team,
+    # and the developers of that team in one place. 
+    ticketdeveloperassignment = pd.merge(ticketsprintassignment, 
+                            pd.merge(employee, developer), how="left")
+    # randomly select one developer per developer to assign each ticket to.
+    ticketdeveloperassignment = ticketdeveloperassignment.groupby('tid', as_index=False).apply(
+    lambda obj: obj.loc[np.random.choice(obj.index, 1),:])
+    # Rename `pid` as `devid`
+    ticketdeveloperassignment.rename(columns = {"pid": "devid"}, inplace = True)
+    # set the date the ticket was assigned to be (0-3) days after the ticket
+    # was scheduled to the sprint.
+    ticketdeveloperassignment['dateassigned'] = ticketdeveloperassignment['datescheduled'].apply(
+    lambda x: x + pd.Timedelta(random.randint(0,4), "D"))
+    # Some tickets may not be assigned at all, if the team has no develpers (unlikely). 
+    # drop them. 
+    ticketdeveloperassignment.dropna(inplace=True)
+    # keep only columns that are neccessary 
+    ticketdeveloperassignment = ticketdeveloperassignment[['tid', 'devid', 'dateassigned']]
+    # push to database.
+    ticketdeveloperassignment.to_sql("ticketdeveloperassignment", engine,
+    	if_exists = "append", index = False)
+
+    """
+    Now, need to populate the `projectassignment` table. 
+    This records all the employees "assinged" to a project.
+
+    To populate this, I'll gather all the developers working on tickets for each project, 
+    as well as the accountable business owners of said projects, 
+    and record that they are "assigned" to that project. 
+    """
+    # merge the accountable business owner and the associate project to the low tickets.
+    tmp = pd.merge(lowticket, highticket, 
+    	left_on = ['highticketid'], right_on = ['tid'], suffixes=('', '_high'))[
+    	['tid', 'bownercreatorid', 'projid']]
+    # record the accountable business owner for each project. 
+    bownerassignments = tmp[['bownercreatorid', 'projid']].drop_duplicates().rename(
+    	columns = {"bownercreatorid":"pid"})
+    bownerassignments['role'] = "Accountable Business Owner"
+    # If a developer is assigned to a ticket associated with a certain project, 
+    # then that developer is assigned to that that project. 
+    devassignments = pd.merge(ticketdeveloperassignment, tmp, 
+    	how = "left")[['devid', 'projid']].drop_duplicates().rename(
+    	columns = {"devid":"pid"})
+    # Merge the developer and businss owner project assignements to make the `projectassignment` table
+    projectassignment = pd.concat([devassignments, bownerassignments])
+    """
+    An employee may be a business owner as well as a developer. 
+    Thus, one may be assigned to a project twice - once as a developer and once as a bowner. 
+    This will violate a key constraint - pk is (pid, projid).
+
+    Instead, keep only the first assignment per employee.
+    """
+    projectassignment = projectassignment.groupby(['pid', 'projid'], as_index=False).first()
+    # push to the database. 
+    projectassignment.to_sql("projectassignment", engine, if_exists = "append", index = False)
 
 
 

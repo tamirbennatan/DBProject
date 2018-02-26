@@ -1,6 +1,5 @@
 /* 
- * Isert sample data into the databse. 
- * Around 10 records per table. 
+ * Insert sample data into the databse. 
  */ 
 
 -- Sample tuples into the person table
@@ -374,24 +373,4 @@ insert into team values
 	('Public Relations'), 
 	('Sales'), 
 	('Office Management');
-
-/*
-insert into Employee values
-	(1, 'Enterprise', 'Lead Developer'),
-	(2, 'Enterprise', 'DBA'),
-	(3, 'Siren', 'Lead Developer'),
-	(6, 'Enterprise', 'Software Developer')
-	
-insert into developer values
-	(1),
-	(2),
-	(3),
-	(6)
-
-insert into project values
-	(1,8,'Algorithmic Trading Application', '20017-10-05', 'PULSE')
-
-insert into clientstakeholder values
-	(1,5,'Overview project completion')
-*/
 
