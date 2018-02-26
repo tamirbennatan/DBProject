@@ -22,6 +22,7 @@ drop table if exists ticketsprintassignment cascade;
 drop table if exists clientstakeholder cascade;
 drop table if exists projectbowner cascade; 
 drop table if exists ticketdeveloperassignment cascade;
+drop table if exists accountablebowner cascade;
 
 -- Generic Person entity
 create table person(
@@ -150,7 +151,7 @@ create table ticketsprintassignment(
 	tid integer, 
 	sprintnumber smallint, 
 	teamname varchar(50), 
-	datesheduled date, 
+	datescheduled date, 
 	primary key (tid, sprintnumber, teamname), 
 	foreign key (tid) references lowticket(tid), 
 	foreign key (sprintnumber, teamname) references sprint(sprintnumber, teamname)
@@ -175,4 +176,11 @@ create table clientstakeholder(
 	foreign key (pid) references client(pid)
 );
 
-
+-- Keep track of which business owner is accountable for which project
+create table accountablebowner(
+	projid integer, 
+	pid integer,
+	primary key (projid, pid), 
+	foreign key (projid) references project(projid), 
+	foreign key (pid) references businessowner(pid)
+);

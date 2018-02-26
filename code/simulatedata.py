@@ -1,4 +1,5 @@
 import pandas as pd
+from pandas.tseries.offsets import MonthBegin, MonthEnd
 import numpy as np
 from sqlalchemy import create_engine
 import configparser
@@ -12,6 +13,7 @@ db_credentials = config["database"]
 db_user = db_credentials["username"]
 db_pass = db_credentials["password"]
 db_url = db_credentials["url"].format(db_user, db_pass)
+
 
 engine = create_engine(db_url)
 
@@ -80,6 +82,8 @@ def randomProjects(clientcompany, daterange):
     return (project)
 
 # Create (n) randomly populated Tickets, returned as tuples. 
+# Omit ticket id. 
+
 def randomTickets(n, datestart = "2017-01-01", dateend = "2018-02-01"):
     """
     Return n tuples, corresponding to n randomly generated tickets. 
@@ -101,26 +105,18 @@ def randomTickets(n, datestart = "2017-01-01", dateend = "2018-02-01"):
         "big important critical easy", 
         "project untertaking challenge", 
         "with for",
-        "annoying important needy scary", 
+        "annoying important needy", 
         "client customer teammate manager"]
     description_func = wordperm_factory(descriptionwords)
 
-    """
-    `tid` is the primary key in `tickets` table. 
-    Get the maximum value in this column, and increment id's from there. 
-    """
-    existing_tids= pd.read_sql_query("select tid from ticket", con = engine)
-    # get the maximum ticket id so far
-    maxtid = (1 if existing_tids.shape[0] == 0 else max(existing_tids['tid']))
+
 
     # accumulate the generated tickets
-    tics = pd.DataFrame({"tid":[], "urgency":[],\
+    tics = pd.DataFrame({"urgency":[],\
         "datecreated": [], "status":[],\
-        "descripion":[]})
+        "description":[]})
     random.seed(1)
     for i in range(1,n+1):
-        # current ticket id
-        tid = maxtid + i
         # get random date
         datecreated = random.choice(daterange)
         # get a random urgency
@@ -129,9 +125,9 @@ def randomTickets(n, datestart = "2017-01-01", dateend = "2018-02-01"):
         description = description_func()
 
         # add to dataframe. Status is fixed at 'backlog'
-        tics = tics.append({"tid":tid, "urgency":urgency,\
+        tics = tics.append({"urgency":urgency,\
         "datecreated": datecreated, "status":'backlog',\
-        "descripion":description}, ignore_index = True)
+        "description":description}, ignore_index = True)
 
     return tics
 
@@ -199,8 +195,8 @@ if __name__ == '__main__':
     They could be both, or neither. 
     Sample from employees (with replacement) to populate these individual tables
     """
-    developer = employee.sample(frac=.7)[['pid']]
-    businessowner = employee.sample(frac=.4)[['pid']]
+    developer = employee.sample(frac=.7, random_state = 1)[['pid']]
+    businessowner = employee.sample(frac=.4, random_state = 1)[['pid']]
     # push these tables to the database
     developer.to_sql('developer', engine, if_exists = "append", index = False)
     businessowner.to_sql('businessowner', engine, if_exists = "append", index = False)
@@ -217,6 +213,20 @@ if __name__ == '__main__':
     project.to_sql("project", engine, if_exists = "append", index = False)
 
     """
+    For each project, there is a business owner accountable for said project. 
+    This is the contents of the `accountablebowner` table. 
+
+    For each project, pick a random business owner to be the accountable bowner. 
+    """
+    # every project has an accountable business onwer (though ER doesn't enforce participation)
+    accountablebowner = project[['projid']]
+    # pick a random bowner (with replacement) for each project. 
+    accountablebowner['pid'] = np.random.choice(businessowner['pid'], 
+        size = accountablebowner.shape[0], replace = True)
+    # push to database
+    accountablebowner.to_sql("accountablebowner", engine, if_exists = "append", index = False)
+
+    """
     Populate the stakeholder table. 
     Each entry is a pairing of a client and project id. 
     Only put clients with projects if the employer of that client created the project. 
@@ -231,7 +241,7 @@ if __name__ == '__main__':
     rolefunc = wordperm_factory(rolewords)
     clientstakeholder['role'] = [rolefunc() for i in range(clientstakeholder.shape[0])]
     # sample from these client-project combinatinots - not all clients are stakeholers
-    clientstakeholder = clientstakeholder.sample(frac = .5)
+    clientstakeholder = clientstakeholder.sample(frac = .5, random_state = 1)
     # push this table to the database. 
     clientstakeholder.to_sql("clientstakeholder", engine, if_exists = "append", index = False)
 
@@ -240,55 +250,159 @@ if __name__ == '__main__':
     For each team, randomly choose a month of the first sprint. 
     From that point on, create monthly sprints for said teams. 
     """
-    # accumulate the sprints in a dataframe
-    # sprint = pd.DataFrame({"sprintnumber": [], "teamname": [], "startdate": [], "enddate": []})
+    #accumulate the sprints in a dataframe
+    sprint = pd.DataFrame({"sprintnumber": [], "teamname": [], "startdate": [], "enddate": []})
 
-    # # simulate the sprints for each individual team, and add them to the `sprint` dataframe. 
-    # for t in team['teamname']:
-    #     # pick the date of the first sprint
-    #     first_start = pd.to_datetime(np.random.choice(daterange)) + MonthBegin(0)
-    #     # get the range of start and enddates for the sprints of that team
-    #     startdate = pd.date_range(start = first_start, end = "2018-02-01", freq = "M") + MonthBegin(0)
-    #     enddate = startdate + MonthEnd(0)
-    #     # build up a temporary dataframe for the sprints of that team
-    #     tmp = pd.DataFrame({"startdate": startdate, "enddate": enddate})
-    #     # add sprint numbers and team name
-    #     tmp['sprintnumber'] = range(1, tmp.shape[0] + 1)
-    #     tmp['teamname'] = np.repeat(t, tmp.shape[0])
+    # simulate the sprints for each individual team, and add them to the `sprint` dataframe. 
+    for t in team['teamname']:
+        # get the range of start and enddates for the sprints of that team
+        startdate = pd.date_range(start = "2017-01-01", end = "2018-02-01", freq = "M") + MonthBegin(0)
+        enddate = startdate + MonthEnd(0)
+        # build up a temporary dataframe for the sprints of that team
+        tmp = pd.DataFrame({"startdate": startdate, "enddate": enddate})
+        # add sprint numbers and team name
+        tmp['sprintnumber'] = range(1, tmp.shape[0] + 1)
+        tmp['teamname'] = np.repeat(t, tmp.shape[0])
+        # for now, put the point goal to thirty - a baseline
+        tmp['pointgoal'] = 30
         
-    #     # accumulate the sprints of all the teams
-    #     sprint = pd.concat([sprint,tmp], ignore_index=True)
+        # accumulate the sprints of all the teams
+        sprint = pd.concat([sprint,tmp], ignore_index=True)
+    # push sprint to database
+    sprint.to_sql("sprint", engine, if_exists = "append", index = False)
+
+    """
+    We need to first create the tickets. 
+    This is so that we can put reasonable point estimates for each sprint - based on 
+    the tickets that are assigned to that sprint. 
+
+    Creating the tickets will be done in stages. First, I'll creat the high-level tickets. 
+    Then, I'll split each of these high level tickets into several low-level tickets,
+    and associate them with sprints. 
+
+    All tickets (high and low) are accumulated in the `ticket` table. 
+    """
+    # accumulate all tickets (high and low)
+    ticket = pd.DataFrame({"tid":[], "datecreated":[], 
+                      "description":[], "status":[],
+                      "urgency":[]})
+    # accumulate high-level tickets as well
+    highticket = pd.DataFrame({"tid":[], "projid":[], "clientcreatorid":[]})
+    """
+    Create 1-5 high level tickets for each project. 
+    Pretend that one of the employees who work for the client company which 
+    requested said projects created the high level tickets. 
+    """
+    nextid = 1
+    for i in range(project.shape[0]):
+        # isolate the given project
+        p = project.loc[i]
+        # simulate 1-5 tickets for that project - these are to be the high level tickets. 
+        tmptickets = randomTickets(np.random.choice(range(1,6)),
+                                   datestart = p['datecreated'],
+                                   dateend = p['datecreated'] + np.timedelta64(30,'D'))
+        tmptickets['tid'] = range(nextid, nextid + tmptickets.shape[0])
+        nextid += tmptickets.shape[0] 
+        # add those tickets to the bank of all tickets
+        ticket = pd.concat([ticket, tmptickets], ignore_index=True)
+        
+        """
+        Now add these simulated tickets to the bank of high-level tickets. 
+        Keep only the needed info on the tickets, and find a client who works 
+        at the company who initialized the project associated with the ticket to populate
+        the `clientcreatorid` field.
+        """
+        tmptickets = tmptickets[['tid']]
+        tmptickets['projid'] = p['projid']
+        # isolate the clients that work at the company who requeted this project
+        potential_creators = client[client['ccid'] == p['ccid']]['pid']
+        tmptickets['clientcreatorid'] = [np.random.choice(potential_creators)
+                                         for i in range(tmptickets.shape[0])]
+        
+        # add the tickets to the acccumulated high-level tickets
+        highticket = pd.concat([highticket, tmptickets], ignore_index=True)
+
+    """
+    Now create a bunch of low-level tickets from each high level ticket. 
+    For low-level ticket, the accountable business owner splits it into low-level tickets
+    (although this is is not enforced by the ER.)
+
+    Each low-level ticket generated will popoulate the `lowticket` table, 
+    as well as appear in the `ticket` table. 
+
+    As such, I'll build up a dataframe called `lowticket_extra`, which will contain
+    the information needed for the `lowticket` table as well as that of the `ticket` table. 
+
+    I'll then project this larger dataframe to get the information for each table individually, 
+    and push it to the database. 
+    """
+    # Get all the information about the high level tickets in one place
+    lowticket_extra = pd.merge(pd.merge(highticket, ticket),accountablebowner).rename(
+    columns = {"tid": "highticketid", "pid":"bownercreatorid", 'datecreated':'date_highcreated'})
+    # expand each high level ticket to a random number of low level tickets (between 1 and 5)
+    lowticket_extra['numtics'] = np.random.choice(range(1,6), size = lowticket_extra.shape[0])
+    lowticket_extra = pd.DataFrame([lowticket_extra.ix[idx] 
+                       for idx in lowticket_extra.index 
+                       for _ in range(lowticket_extra.ix[idx]['numtics'])]).reset_index(drop=True)
+
+    # Have the date each low-level ticket was created be a between (0,30) days after the
+    # date the associated high-level ticket was created. 
+    lowticket_extra['datecreated'] = [d + np.timedelta64(random.randint(0,31), "D") 
+                                  for d in lowticket_extra['date_highcreated']]
+
+    # increment the existing ticket id's to add new ticket id's to these low-level tickets. 
+    lowticket_extra['tid'] = range(int(max(ticket['tid']) + 1),\
+         int(max(ticket['tid']) + 1 + lowticket_extra.shape[0]))
+
+    # add random point estimates and urgencies to the low-level tickets. 
+    lowticket_extra['pointestimate'] = np.random.choice(range(1,6), 
+        size = lowticket_extra.shape[0])
+    lowticket_extra['urgency'] = np.random.choice(range(1,6), 
+        size = lowticket_extra.shape[0])
+
+    # Isolate the information that belongs in the `lowticket` table.
+    lowticket = lowticket_extra[['tid', 'bownercreatorid', 'highticketid', 'pointestimate']]
+    # add these generated low-level tickets to the bank of all tickets. 
+    ticket = pd.concat([ticket, lowticket_extra[['tid', 'urgency', 
+        'datecreated', 'status','description']]])
+
+    # push `ticket`, `lowticket`, and `highticket` to the database
+    ticket.to_sql("ticket", engine, if_exists="append", index = False)
+    highticket.to_sql("highticket", engine, if_exists="append", index = False)
+    lowticket.to_sql("lowticket", engine, if_exists="append", index = False)
+
+    """
+    Assign tickets to sprints to populate the `ticketsprintassignment` table. 
 
 
+    """
+    # get the low level tickets, and the dates on which they were created
+    ticketsprintassignment = pd.merge(lowticket,ticket)[['tid', 'datecreated']]
+    # Pick a random team which will assign this ticket to one of their sprints. 
+    ticketsprintassignment['teamname'] = np.random.choice(team['teamname'],
+                                    size = ticketsprintassignment.shape[0], replace = True)
+    # associate the sprint which was active while the ticket was created to the ticket
+    ticketsprintassignment['sprintdate'] = ticketsprintassignment['datecreated'].apply(lambda x:
+                                         x + MonthBegin(0))
+    ticketsprintassignment = pd.merge(ticketsprintassignment, sprint,\
+    	left_on=['teamname', 'sprintdate'],\
+        right_on=['teamname', 'startdate'])[
+    		['tid','datecreated', 'teamname', 'enddate', 'sprintnumber']]
+    """
+    let the date the sprint was scheduled to the sprint be between (0,4)
+    days after the ticket was created.
+    But it must be the case that that it was assigned to the sprint before the end of the sprint. 
+    """
+    ticketsprintassignment['datescheduled'] = ticketsprintassignment.apply(lambda x:
+                                    min(x['datecreated'] + pd.Timedelta(random.randint(0,4), "D"), 
+                                       x['enddate']), axis = 1)
+    # isolate the columns needed
+    ticketsprintassignment = ticketsprintassignment[
+    	['tid', 'teamname', 'sprintnumber', 'datescheduled']]
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # push to the database
+    ticketsprintassignment.to_sql("ticketsprintassignment", engine,
+    	if_exists = "append", index = False)
 
 
 
