@@ -22,3 +22,12 @@ alter table ticket
 alter table lowticket
 	add constraint positivepointestimatecheck
 	check (pointestimate >= 0);
+
+/*
+ * Add a check constraint to `sprint`
+ * The field `pointgoal` should be non-negative. 
+ * Name this constraint `positivepointgoalcheck`.
+ */
+alter table sprint	
+	add constraint positivepointgoalcheck
+	check (pointgoal >= 0);
