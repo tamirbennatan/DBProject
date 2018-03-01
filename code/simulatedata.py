@@ -398,7 +398,7 @@ if __name__ == '__main__':
                                     size = ticketsprintassignment.shape[0], replace = True)
     # associate the sprint which was active while the ticket was created to the ticket
     ticketsprintassignment['sprintdate'] = ticketsprintassignment['datecreated'].apply(lambda x:
-                                         x + MonthBegin(0))
+                                         x + MonthBegin(-1))
     ticketsprintassignment = pd.merge(ticketsprintassignment, sprint,\
         left_on=['teamname', 'sprintdate'],\
         right_on=['teamname', 'startdate'])[
