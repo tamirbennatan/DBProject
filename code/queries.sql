@@ -60,37 +60,28 @@ GROUP BY
 -- total sprint points per client and client company
 SELECT
 	cc.companyname,
-    p.pid,
     p.name,
-    p.phonenumber,
     p.email,
-    cp.pointsum,
-    cc.pointbudget
-FROM
-	clientcompany AS cc
+    cp.pointsum AS total_points_requested_by_client,
+    cc.pointbudget AS company_sprint_point_budget
+FROM clientcompany AS cc
 	JOIN
-        (
-            SELECT
-                cp.pid,
-                c.ccid,
-                cp.pointsum
-            FROM
-                (-- pid and point total for all clients
-                    SELECT
-                        ht.clientcreatorid AS pid,
-                        sum(lt.pointestimate) AS pointsum
-                    FROM
-                        highticket AS ht
-                        JOIN lowticket AS lt
-                        ON ht.tid = lt.highticketid
-                    GROUP BY
-                        ht.tid
-                ) AS cp -- Client with Point total
-                JOIN client AS c
-                ON c.pid = cp.pid
-        ) AS cp           
-    ON cp.ccid = cc.ccid  
-    JOIN person AS p
+	(SELECT cp.pid, c.ccid, cp.pointsum
+        FROM (SELECT ht.clientcreatorid AS pid, sum(lt.pointestimate) AS pointsum
+              FROM highticket AS ht
+                  JOIN
+                  lowticket AS lt
+                  ON ht.tid = lt.highticketid
+              GROUP BY
+                  ht.tid
+        ) AS cp -- Client with Point total
+        JOIN client AS c
+        ON c.pid = cp.pid
+    ) AS cp           
+    ON cp.ccid = cc.ccid
+    
+    JOIN
+    person AS p
     ON cp.pid = p.pid
 ORDER BY
     cc.companyname,
