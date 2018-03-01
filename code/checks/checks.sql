@@ -17,12 +17,12 @@ alter table ticket
 
 /*
  * Add a check constraint to `ticket`
- * The field `status` should be one of 'backlog', 'started', 'done'
+ * The field `status` should be one of 'backlog', 'started', 'complete'
  * Name this constraint `ticketstatuscheck`
  */
  ALTER TABLE ticket
     ADD CONSTRAINT ticketstatuscheck
-    CHECK (status in ('backlog', 'started', 'done'))
+    CHECK (status in ('backlog', 'started', 'complete'))
 ;
 
 /*
