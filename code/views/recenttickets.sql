@@ -41,3 +41,9 @@ create view recenttickets as
 		and ta.teamname = s.teamname;
 
 
+/* We can see from the result that Views are read only, the system does not 
+change according to an update on a view. We can get the effect of an updatable
+view by creating INSTEAD triggers on the view, which must convert attempted 
+inserts, etc. on the view into appropriate actions on other tables. Another 
+possibility is to create rules (see CREATE RULE), but in practice triggers 
+are easier to understand and use correctly.*/
