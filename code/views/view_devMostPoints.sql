@@ -1,8 +1,3 @@
--- informal description of what data each view represents 
--- show CREAT VIEW statements and response of the system 
--- query involving view&response 
--- script of what happens when try run SQL UPDATE statement of each vie
--- summarize con that must hold so DB2/postgreSQL allows updating a view
 
 /*
 * From this devMostPoints table we can get a list of developers,  
@@ -13,11 +8,7 @@
 Relevent information extracted:
  * 
  * - developer id
- * - the point
- * - team name (which scheduled the ticket)
- * - business owner which partitioned ticket from a high level ticket
- * - high level ticket id from which each ticket was partitioned
- * - point estimate of low level ticket.
+ * - the points 
 
 */
 
@@ -31,8 +22,6 @@ create view devMostPoints as
                         where lowticket.tid = ticketdeveloperassignment.tid
                         order by pointestimate desc) a 
      group by devid order by sum(pointestimate) desc;
-
-
 
 
 /* 
