@@ -97,7 +97,7 @@ ORDER BY
 ;
 
 /*
- * 
+ * for every sprint of every team, show attempted vs completed points
  */
 select S.teamname, S.sprintnumber, sum(T.pointestimate), sum(COALESCE(T.pointactual,0))
 from
