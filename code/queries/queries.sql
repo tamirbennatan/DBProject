@@ -140,15 +140,15 @@ lowticket_with_complete_status AS (
        	INNER JOIN
        	ticket AS t
    		     ON lt.tid = t.tid
-      	WHERE
-            t.status = 'complete'
+    WHERE
+        t.status = 'complete'
 ),
 lowticket_with_attemptedpoints_vs_completedpoints AS (
     SELECT
         ltap.tid,
         ltap.pointestimate,
         ltcp.pointestimate as pointactual
-	FROM
+    FROM
         lowticket_with_status ltap
         LEFT JOIN
         lowticket_with_complete_status ltcp
@@ -165,6 +165,6 @@ FROM
     JOIN
     ticketsprintassignment AS s
         ON s.tid = ltapcp.tid
-group by s.teamname, s.sprintnumber
-order by s.teamname, s.sprintnumber
+GROUP BY s.teamname, s.sprintnumber
+ORDER BY s.teamname, s.sprintnumber
 ;
