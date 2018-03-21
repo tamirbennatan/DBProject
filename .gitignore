@@ -4,3 +4,6 @@ Scripts/*
 *.zip
 .idea
 *.iml
+*.ini
+*.pyc
+*.Rhistory
