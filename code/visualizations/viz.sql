@@ -43,5 +43,5 @@ from(
 ) t
 inner join sprint s
 		on t.sprintnumber = s.sprintnumber and
-			t.teamname = s.teamname
+			t.teamname = s.teamname;
 

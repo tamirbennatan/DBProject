@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data-sources>
+	<data-source id="postgres-jdbc-1624558a2e3-39a5148539dffdd6" provider="postgresql" driver="postgres-jdbc" name="PostgreSQL - cs421" save-password="true" show-system-objects="true" read-only="false">
+		<connection host="comp421.cs.mcgill.ca" port="5432" server="" database="cs421" url="jdbc:postgresql://comp421.cs.mcgill.ca:5432/cs421" user="cs421g51" password="NBYJNVEWFVIGAVJsRnak" type="dev">
+			<provider-property name="@dbeaver-show-non-default-db@" value="false"/>
+			<provider-property name="@dbeaver-switch-db-on-expand@" value="false"/>
+			<network-handler type="TUNNEL" id="ssh_tunnel" enabled="true" save-password="true" user="cs421g51" password="NBYJNVEWFVIGAVJsRnak">
+				<property name="sshConnectTimeout" value="10000"/>
+				<property name="port" value="22"/>
+				<property name="host" value="comp421.cs.mcgill.ca"/>
+				<property name="authType" value="PASSWORD"/>
+			</network-handler>
+			<network-handler type="CONFIG" id="postgre_ssl" enabled="false" save-password="false"/>
+			<network-handler type="PROXY" id="socks_proxy" enabled="false" save-password="false">
+				<property name="socks-port" value="1080"/>
+			</network-handler>
+		</connection>
+	</data-source>
+	<filters/>
+</data-sources>

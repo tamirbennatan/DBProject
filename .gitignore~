@@ -1,0 +1,6 @@
+passwords.*
+*.ipynb
+Scripts/*
+*.zip
+.idea
+*.iml
