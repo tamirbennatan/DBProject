@@ -38,7 +38,7 @@ p2 = points.goal %>%
       mutate(points.surplus = total_points - pointgoal) %>%
       mutate(reached.goal = points.surplus >=0) %>%
       ggplot(aes(x = sprintnumber, y = points.surplus, fill = reached.goal)) +
-      geom_col() + 
+      geom_col(show.legend = FALSE) + 
       facet_wrap(~teamname , ncol = 5, scales = "free") + 
       labs(title = "Delta between point goal and achieved points per sprint",
            subtitle = "Red indicates goal was not met.")

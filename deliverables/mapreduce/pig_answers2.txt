@@ -1,0 +1,85 @@
+Here is what the output looks like (a subset of of the DUMP command ouptut)
+
+(World of Tomorrow)
+(Visit  The)
+(Vacation)
+(Unfinished Business)
+(Trainwreck)
+(Tomorrowland)
+(The Wedding Ringer)
+(The Second Best Exotic Marigold Hotel)
+(The Ridiculous 6)
+(The Overnight)
+(The Night Before)
+(The Martian)
+(The Man from U.N.C.L.E.)
+(The Lobster)
+(The Intern)
+(The Hunger Games: Mockingjay - Part 2)
+(The Good Dinosaur)
+(The Dressmaker)
+(The DUFF)
+(The D Train)
+(The Cobbler)
+(Terminator Genisys)
+(Ted 2)
+(Tangerine)
+(Star Wars: Episode VII - The Force Awakens)
+(Spy)
+(Sisters)
+(Shes Funny That Way)
+(Sharknado 3: Oh Hell No!)
+(Self/less)
+(Schneider vs. Bax)
+(Ricki and the Flash)
+
+
+i)
+	a)
+
+		To complete this task, we used:
+		- one map task
+		- one reduce task
+
+	b) 
+		After the join, the schema looks like:
+		
+		joined: {
+		    movies2015::movieid: int,
+		    movies2015::title: chararray,
+		    movies2015::year: int,
+		    genres::movieid: int,
+		    genres::genre: chararray
+		}
+
+		i.e, the rows are naturally flattened, as a SQL oputput would be. There are no non-atomic datatypes (bags, maps, etc.)
+
+
+	c) 
+		The job took 13 seconds. 
+
+i)
+	
+	a) 
+		1 map task, and 4 reduce tasks were ran.
+
+	b) 
+		The query took 14 seconds to run. 
+
+	c) 
+		The query execution time actually increased. I was expecting it to decrease, as we are further parrelalizing the operation. 
+		This shows that the additional overhead of partitioning the data into 4 reduce tasks and then re-merging it outweighs the 
+		benefits of increased parralelization.
+
+
+
+
+
+
+
+
+
+
+
+
+
