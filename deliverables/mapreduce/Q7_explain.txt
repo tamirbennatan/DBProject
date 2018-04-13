@@ -1,0 +1,198 @@
+#--------------------------------------------------
+# Map Reduce Plan                                  
+#--------------------------------------------------
+MapReduce node scope-2116
+Map Plan
+ratinggrouped: Local Rearrange[tuple]{int}(false) - scope-2133
+|   |
+|   Project[int][0] - scope-2135
+|
+|---ratingcount: New For Each(false,false)[bag] - scope-2122
+    |   |
+    |   Project[int][0] - scope-2123
+    |   |
+    |   POUserFunc(org.apache.pig.builtin.COUNT$Initial)[tuple] - scope-2124
+    |   |
+    |   |---Project[bag][1] - scope-2125
+    |
+    |---Pre Combiner Local Rearrange[tuple]{Unknown} - scope-2136
+        |
+        |---ratings: New For Each(false,false,false)[bag] - scope-2072
+            |   |
+            |   Cast[int] - scope-2064
+            |   |
+            |   |---Project[bytearray][0] - scope-2063
+            |   |
+            |   Cast[chararray] - scope-2067
+            |   |
+            |   |---Project[bytearray][1] - scope-2066
+            |   |
+            |   Cast[int] - scope-2070
+            |   |
+            |   |---Project[bytearray][2] - scope-2069
+            |
+            |---ratings: Load(/data/ratings.csv:PigStorage(',')) - scope-2062--------
+Combine Plan
+ratinggrouped: Local Rearrange[tuple]{int}(false) - scope-2137
+|   |
+|   Project[int][0] - scope-2139
+|
+|---ratingcount: New For Each(false,false)[bag] - scope-2126
+    |   |
+    |   Project[int][0] - scope-2127
+    |   |
+    |   POUserFunc(org.apache.pig.builtin.COUNT$Intermediate)[tuple] - scope-2128
+    |   |
+    |   |---Project[bag][1] - scope-2129
+    |
+    |---ratinggrouped: Package(CombinerPackager)[tuple]{int} - scope-2132--------
+Reduce Plan
+Store(hdfs://cs421-hd1.cs.mcgill.ca:9000/tmp/temp1774934834/tmp1803701797:org.apache.pig.impl.io.InterStorage) - scope-2117
+|
+|---ratingcount: New For Each(false,false)[bag] - scope-2082
+    |   |
+    |   Project[int][0] - scope-2077
+    |   |
+    |   POUserFunc(org.apache.pig.builtin.COUNT$Final)[long] - scope-2080
+    |   |
+    |   |---Project[bag][1] - scope-2130
+    |
+    |---ratinggrouped: Package(CombinerPackager)[tuple]{int} - scope-2074--------
+Global sort: false
+----------------
+
+MapReduce node scope-2120
+Map Plan
+Union[tuple] - scope-2121
+|
+|---alljoined: Local Rearrange[tuple]{int}(false) - scope-2088
+|   |   |
+|   |   Project[int][0] - scope-2089
+|   |
+|   |---movies2016: Filter[bag] - scope-2032
+|       |   |
+|       |   Equal To[boolean] - scope-2035
+|       |   |
+|       |   |---Project[int][2] - scope-2033
+|       |   |
+|       |   |---Constant(2016) - scope-2034
+|       |
+|       |---movies: New For Each(false,false,false)[bag] - scope-2031
+|           |   |
+|           |   Cast[int] - scope-2023
+|           |   |
+|           |   |---Project[bytearray][0] - scope-2022
+|           |   |
+|           |   Cast[chararray] - scope-2026
+|           |   |
+|           |   |---Project[bytearray][1] - scope-2025
+|           |   |
+|           |   Cast[int] - scope-2029
+|           |   |
+|           |   |---Project[bytearray][2] - scope-2028
+|           |
+|           |---movies: Load(/data/movies.csv:PigStorage(',')) - scope-2021
+|
+|---alljoined: Local Rearrange[tuple]{int}(false) - scope-2090
+|   |   |
+|   |   Project[int][0] - scope-2091
+|   |
+|   |---Load(hdfs://cs421-hd1.cs.mcgill.ca:9000/tmp/temp1774934834/tmp976238708:org.apache.pig.impl.io.InterStorage) - scope-2114
+|
+|---alljoined: Local Rearrange[tuple]{int}(false) - scope-2092
+    |   |
+    |   Project[int][0] - scope-2093
+    |
+    |---Load(hdfs://cs421-hd1.cs.mcgill.ca:9000/tmp/temp1774934834/tmp1803701797:org.apache.pig.impl.io.InterStorage) - scope-2118--------
+Reduce Plan
+proj: Store(fakefile:org.apache.pig.builtin.PigStorage) - scope-2107
+|
+|---proj: New For Each(false,false,false,false)[bag] - scope-2106
+    |   |
+    |   Project[int][0] - scope-2098
+    |   |
+    |   Project[chararray][1] - scope-2100
+    |   |
+    |   Project[long][4] - scope-2102
+    |   |
+    |   Project[long][6] - scope-2104
+    |
+    |---alljoined: Package(JoinPackager(true,true,true))[tuple]{int} - scope-2087--------
+Global sort: false
+----------------
+
+MapReduce node scope-2109
+Map Plan
+genresgrouped: Local Rearrange[tuple]{tuple}(false) - scope-2046
+|   |
+|   Project[int][0] - scope-2047
+|   |
+|   Project[chararray][1] - scope-2048
+|
+|---genres: New For Each(false,false)[bag] - scope-2043
+    |   |
+    |   Cast[int] - scope-2038
+    |   |
+    |   |---Project[bytearray][0] - scope-2037
+    |   |
+    |   Cast[chararray] - scope-2041
+    |   |
+    |   |---Project[bytearray][1] - scope-2040
+    |
+    |---genres: Load(/data/moviegenres.csv:PigStorage(',')) - scope-2036--------
+Reduce Plan
+Store(hdfs://cs421-hd1.cs.mcgill.ca:9000/tmp/temp1774934834/tmp-706289725:org.apache.pig.impl.io.InterStorage) - scope-2110
+|
+|---uniq_genres: New For Each(true)[bag] - scope-2051
+    |   |
+    |   Project[tuple][0] - scope-2049
+    |
+    |---genresgrouped: Package(Packager)[tuple]{tuple} - scope-2045--------
+Global sort: false
+----------------
+
+MapReduce node scope-2112
+Map Plan
+genresgrouped_uniq: Local Rearrange[tuple]{int}(false) - scope-2151
+|   |
+|   Project[int][0] - scope-2153
+|
+|---genrecount: New For Each(false,false)[bag] - scope-2140
+    |   |
+    |   Project[int][0] - scope-2141
+    |   |
+    |   POUserFunc(org.apache.pig.builtin.COUNT$Initial)[tuple] - scope-2142
+    |   |
+    |   |---Project[bag][1] - scope-2143
+    |
+    |---Pre Combiner Local Rearrange[tuple]{Unknown} - scope-2154
+        |
+        |---Load(hdfs://cs421-hd1.cs.mcgill.ca:9000/tmp/temp1774934834/tmp-706289725:org.apache.pig.impl.io.InterStorage) - scope-2111--------
+Combine Plan
+genresgrouped_uniq: Local Rearrange[tuple]{int}(false) - scope-2155
+|   |
+|   Project[int][0] - scope-2157
+|
+|---genrecount: New For Each(false,false)[bag] - scope-2144
+    |   |
+    |   Project[int][0] - scope-2145
+    |   |
+    |   POUserFunc(org.apache.pig.builtin.COUNT$Intermediate)[tuple] - scope-2146
+    |   |
+    |   |---Project[bag][1] - scope-2147
+    |
+    |---genresgrouped_uniq: Package(CombinerPackager)[tuple]{int} - scope-2150--------
+Reduce Plan
+Store(hdfs://cs421-hd1.cs.mcgill.ca:9000/tmp/temp1774934834/tmp976238708:org.apache.pig.impl.io.InterStorage) - scope-2113
+|
+|---genrecount: New For Each(false,false)[bag] - scope-2061
+    |   |
+    |   Project[int][0] - scope-2056
+    |   |
+    |   POUserFunc(org.apache.pig.builtin.COUNT$Final)[long] - scope-2059
+    |   |
+    |   |---Project[bag][1] - scope-2148
+    |
+    |---genresgrouped_uniq: Package(CombinerPackager)[tuple]{int} - scope-2053--------
+Global sort: false
+----------------

@@ -3,7 +3,7 @@ movies = LOAD '/data/movies.csv' USING PigStorage(',') AS (movieid:INT, title:CH
 -- Group by year
 moviesperyear = group movies by year;
 -- count the number of movies per year
-yearcount = foreach moviesperyear generate ($0), count($1) as yearcount;
+yearcount = foreach moviesperyear generate ($0), COUNT($1) as yearcount;
 -- sort output
 sorted = order yearcount by $0;
 -- Store into folder

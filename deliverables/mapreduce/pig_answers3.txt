@@ -1,0 +1,23 @@
+a) 
+	After the group by operation, it is nested. (genre, year) form the key, and the value is a 
+	of the tupleds that match that (genre, year) combination after the previous join operation:
+
+			grouped: {
+		    group: (
+		        genres::genre: chararray,
+		        movies15_16::year: int
+		    ),
+		    joined: {
+		        (
+		            movies15_16::movieid: int,
+		            movies15_16::title: chararray,
+		            movies15_16::year: int,
+		            genres::movieid: int,
+		            genres::genre: chararray
+			        )
+			    }
+			}
+
+b) 
+	The script took 12 seconds. 
+
